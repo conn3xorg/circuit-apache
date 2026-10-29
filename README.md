@@ -4,6 +4,8 @@ A Conn3x circuit that installs the Apache HTTP Server from your distribution's p
 
 Apache is the same server on Debian and on Rocky Linux, but it doesn't look it. It's `apache2` on one and `httpd` on the other, with a different service name, a different user, a different tree under `/etc`, and `a2enmod` on one side where the other has `conf.modules.d`. You describe the virtual hosts once and the circuit puts them in the right place on each. Every change shows up in `conn3x plan` as a diff, and the apply runs Apache's own config test before anything goes live, so a typo fails the apply and the running server keeps its old config.
 
+> **On a host that already runs Apache:** the circuit takes over the `Listen` lines and turns off the distribution's default site. Sites you set up by hand keep their files, but only answer on the ports your `vhosts` use. Move them into `vhosts`, or into `extra_config`, before the first apply.
+
 ## Usage
 
 ```hcl
