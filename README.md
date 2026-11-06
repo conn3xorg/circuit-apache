@@ -12,7 +12,7 @@ Apache is the same server on Debian and on Rocky Linux, but it doesn't look it. 
 
 ```hcl
 module "apache" {
-  source = "github.com/conn3xorg/circuit-apache?ref=v0.2.0"
+  source = "github.com/conn3xorg/circuit-apache?ref=v0.2.1"
 
   hosts                = { web1 = "203.0.113.10" }
   ssh_private_key_file = "~/.ssh/id_ed25519"
