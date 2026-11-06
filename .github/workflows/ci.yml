@@ -77,7 +77,7 @@ jobs:
       # backend virtual host on :8081, and ServerTokens comes from
       # extra_config.
       - name: Fetch a page, and a page through the reverse proxy
-        run: |
+        run: &check |
           sudo podman exec -i circuit-apache sh -eu <<'EOF'
           [ "$(curl -sSf -H 'Host: www.example.test' localhost:8080/)" = 'Hello from Apache.' ]
           [ "$(curl -sSf -H 'Host: example.test' localhost:8080/)" = 'Hello from Apache.' ]
@@ -87,6 +87,20 @@ jobs:
           echo "$out" | grep -qx 'Hello from the backend.'
           echo "$out" | grep -qx 'Server: Apache'
           EOF
+      # Restarting the container boots systemd again, so this checks Apache
+      # comes back by itself, still serves both names, and the plan has
+      # nothing to do.
+      - name: Restart the host, then fetch the pages again and plan
+        working-directory: examples/local
+        run: |
+          sudo podman restart circuit-apache
+          for _ in $(seq 60); do
+            case $(sudo podman exec circuit-apache systemctl is-system-running 2>/dev/null) in running|degraded) break ;; esac
+            sleep 1
+          done
+          conn3x plan -detailed-exitcode
+      - name: Fetch the pages after the restart
+        run: *check
       - name: Clean up
         if: always()
         working-directory: examples/local
