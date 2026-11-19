@@ -177,7 +177,7 @@ circuit "apache" {
       conn3x_line.apache_rpm__listen,
       conn3x_file.apache_rpm__ssl,
       conn3x_command.apache_rpm__network_connect,
-      conn3x_command.apache_rpm__port,
+      conn3x_selinux_port.apache_rpm__port,
       conn3x_command.apache_rpm__content,
     ]
     notify = [handler.reload]
@@ -302,9 +302,9 @@ circuit "apache_rpm" {
 
   step "port" {
     for_each = { for p in local.selinux_ports : tostring(p) => p }
-    command {
-      command = "semanage port -a -t http_port_t -p tcp ${item.value} 2>/dev/null || semanage port -m -t http_port_t -p tcp ${item.value}"
-      unless  = "! selinuxenabled || semanage port -l | grep -E '^http_port_t ' | grep -Eq '[ ,]${item.value}(,|$)'"
+    selinux_port {
+      port   = item.value
+      setype = "http_port_t"
     }
   }
 

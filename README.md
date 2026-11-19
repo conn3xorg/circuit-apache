@@ -73,7 +73,7 @@ On each host, in order:
 2. Turns on the modules in `modules`, plus `proxy` and `proxy_http` when a virtual host has `proxy_pass` and `ssl` when one has a certificate or proxies to `https://`. On Debian and Ubuntu that's `a2enmod`, which also turns on what each module depends on. On the Red Hat family, where `conf.modules.d` loads most modules already, dnf installs the package that has a module's `.so` when it's missing, such as `mod_ssl`, and the config loads any module that isn't loaded yet.
 3. Creates each `document_root` that's missing.
 4. Hands the Listen lines to the circuit's config, since Apache refuses to start when two files listen on the same port. On Debian and Ubuntu, `/etc/apache2/ports.conf` becomes a comment, and the `000-default` site is turned off. On the Red Hat family, the `Listen 80` line in `/etc/httpd/conf/httpd.conf` becomes a comment, and when a virtual host uses TLS, `/etc/httpd/conf.d/ssl.conf` keeps mod_ssl's server-wide settings but loses its own Listen line and default virtual host, whose certificate doesn't exist until Apache first starts.
-5. On the Red Hat family with SELinux on: lets Apache listen on each port outside SELinux's web ports with `semanage port`, labels each `document_root` that isn't already web content as `httpd_sys_content_t`, and turns on `httpd_can_network_connect` when a virtual host proxies, so Apache can reach a backend on any port.
+5. On the Red Hat family with SELinux on: lets Apache listen on each port outside SELinux's web ports with a `selinux_port` step, labels each `document_root` that isn't already web content as `httpd_sys_content_t`, and turns on `httpd_can_network_connect` when a virtual host proxies, so Apache can reach a backend on any port.
 6. Renders the config to `conn3x.conf.candidate` in `/etc/apache2` or `/etc/httpd`, and adds an include file that loads after the distribution's own config files: `conf-enabled/zz-conn3x.conf` on Debian and Ubuntu, `conf.d/zz-conn3x.conf` on the Red Hat family.
 7. Runs Apache's config test with the candidate in place of the live config. If it passes, copies the candidate to `conn3x.conf`. If someone edits the live file by hand, the next apply puts it back.
 8. Starts Apache now and at boot, and reloads it gracefully after the config or the modules change, so requests in flight finish on the old config.
@@ -116,7 +116,7 @@ Before the circuit runs, the `conn3x_host` data source reads each host's distrib
 
 ## Requirements
 
-Requires Conn3x v0.6.9 or later and systemd on each host, with a package mirror the host can reach.
+Requires Conn3x v0.27.0 or later and systemd on each host, with a package mirror the host can reach.
 
 ## Tested on
 
